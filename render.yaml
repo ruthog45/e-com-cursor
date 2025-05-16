@@ -1,0 +1,50 @@
+services:
+  # Web application
+  - type: web
+    name: ecommerce-frontend
+    env: node
+    buildCommand: cd frontend && npm install && npm run build
+    startCommand: cd frontend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: REACT_APP_API_URL
+        fromService:
+          name: ecommerce-api
+          type: web
+          property: host
+
+  # Backend API
+  - type: web
+    name: ecommerce-api
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: MONGODB_URI
+        fromDatabase:
+          name: ecommerce-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: REDIS_URL
+        fromService:
+          name: ecommerce-redis
+          type: redis
+          property: connectionString
+
+  # Redis instance
+  - type: redis
+    name: ecommerce-redis
+    ipAllowList: []
+    plan: free
+
+databases:
+  # MongoDB instance
+  - name: ecommerce-db
+    databaseName: ecommerce
+    plan: free 
